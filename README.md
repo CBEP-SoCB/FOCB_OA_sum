@@ -21,7 +21,7 @@ review, critique, learn from, and build upon CBEP science.
  least one other folder, usually "Graphics" or "Analysis". Other folders, often
  a "Derived_Data" folder are included if necessary.
  
- Thie archive contains the following sub-folders:
+ The archive contains the following sub-folders:
 
 - Original Data.  Original data, with a "DATA_SOURCES.md" or "READ ME.txt" file
   that documents data sources.
