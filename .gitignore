@@ -8,21 +8,8 @@
 # User-specific files
 .Ruserdata
 
-# Example code in package build process
-*-Ex.R
-
-# Output files from R CMD build
-/*.tar.gz
-
-# Output files from R CMD check
-/*.Rcheck/
-
 # RStudio files
 .Rproj.user/
-
-# produced vignettes
-vignettes/*.html
-vignettes/*.pdf
 
 # OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
 .httr-oauth
@@ -43,16 +30,11 @@ vignettes/*.pdf
 
 # HTML versions of standard markdown files
 README.html
-Derived_Data/DATA_NOTES.html
-Original_Data/DATA_SOURCES.html
-
-# Directories to hide intermediate work products
-**/drafts
-**/sources
+DATA_NOTES.html
+DATA_SOURCES.html
 
 #  Left over R Notebook HTML files
 *.nb.html
 
-# Materials from FOCB that are not relevant here
-/Original_Data/FOCB Graphics
-/Original_Data/cms1data.zip
+# Models
+*/rds

@@ -18,7 +18,7 @@ Curtis C. Bohlen, Casco Bay Estuary Partnership
     -   [Calculate Diurnal Deviations](#calculate-diurnal-deviations)
 -   [Exploratory Graphics](#exploratory-graphics)
 -   [Summary Statistics](#summary-statistics)
--   [Entire Data Set](#entire-data-set)
+    -   [Entire Data Set](#entire-data-set)
     -   [Omega Aragonite Observations and Percentage Below Levels of
         Concern](#omega-aragonite-observations-and-percentage-below-levels-of-concern)
     -   [Daily Omega Aragonite (medians) Observations and and Percentage
@@ -47,22 +47,12 @@ Curtis C. Bohlen, Casco Bay Estuary Partnership
 library(tidyverse)
 ```
 
-    ## Warning: package 'tidyverse' was built under R version 4.0.5
-
     ## -- Attaching packages --------------------------------------- tidyverse 1.3.1 --
 
     ## v ggplot2 3.3.5     v purrr   0.3.4
     ## v tibble  3.1.6     v dplyr   1.0.7
     ## v tidyr   1.1.4     v stringr 1.4.0
-    ## v readr   2.1.0     v forcats 0.5.1
-
-    ## Warning: package 'ggplot2' was built under R version 4.0.5
-
-    ## Warning: package 'tidyr' was built under R version 4.0.5
-
-    ## Warning: package 'dplyr' was built under R version 4.0.5
-
-    ## Warning: package 'forcats' was built under R version 4.0.5
+    ## v readr   2.1.1     v forcats 0.5.1
 
     ## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
     ## x dplyr::filter() masks stats::filter()
@@ -75,8 +65,6 @@ library(readr)
 library(GGally)
 ```
 
-    ## Warning: package 'GGally' was built under R version 4.0.5
-
     ## Registered S3 method overwritten by 'GGally':
     ##   method from   
     ##   +.gg   ggplot2
@@ -84,8 +72,6 @@ library(GGally)
 ``` r
 library(zoo)
 ```
-
-    ## Warning: package 'zoo' was built under R version 4.0.5
 
     ## 
     ## Attaching package: 'zoo'
@@ -97,8 +83,6 @@ library(zoo)
 ``` r
 library(lubridate)  # here, for the make_datetime() function
 ```
-
-    ## Warning: package 'lubridate' was built under R version 4.0.5
 
     ## 
     ## Attaching package: 'lubridate'
@@ -117,7 +101,7 @@ load_cbep_fonts()
 ## Establish Folder Reference
 
 ``` r
-sibfldnm <- 'Original_Data'
+sibfldnm <- 'Data'
 parent   <- dirname(getwd())
 sibling  <- file.path(parent,sibfldnm)
 
@@ -138,7 +122,7 @@ A solution in an answer to this stack overflow questions
 suggests reading in the first row only to generate names, then skip the
 row of names and the row of units, and read the “REAL” data.
 
-Note that I round the timestamp on the data to the nearest hour.
+Note that we round the timestamp on the data to the nearest hour.
 
 ### Primary Data
 
@@ -198,12 +182,11 @@ total pH scale. Here we load it and use a left join by timestamp to add
 the data to the principal data set.
 
 ``` r
-sibfldnm <- 'PyCO2SYS_Calc'
-parent   <- dirname(getwd())
-sibling  <- file.path(parent,sibfldnm)
+niecefldnm <- 'PyCO2SYS_Calc'
+niece  <- file.path(sibling, niecefldnm)
 
 fn    <- 'focbco2sys_out.csv'
-fpath <- file.path(sibling,fn)
+fpath <- file.path(niece,fn)
 
 
 ph_tot_data <- read_csv(fpath, 
@@ -264,11 +247,11 @@ The Takahashi et al. 2002 equations are as follows:
 
 #### “Expected pCO<sub>2</sub>” at Observed Temperature
 
-(*p**C**O*<sub>2</sub> at *T*<sub>*o**b**s*</sub>) = (*p**C**O*<sub>2</sub>)<sub>*o**b**s*</sub> × *e**x**p*(0.0423(*T*<sub>*o**b**s*</sub> − *T*<sub>*m**e**a**n*</sub>)
+(*p**C**O*<sub>2</sub> at *T*<sub>*o**b**s*</sub>) = (*p**C**O*<sub>2</sub>)<sub>*o**b**s*</sub> × *e**x**p*(0.0423(*T*<sub>*o**b**s*</sub> − *T*<sub>mean</sub>)
 
 #### “Temperature Corrected” pCO<sub>2</sub>
 
-(*p**C**O*<sub>2</sub> at *T*<sub>*m**e**a**n*</sub>) = (*p**C**O*<sub>2</sub>)<sub>*o**b**s*</sub> × *e**x**p*(0.0423(*T*<sub>*m**e**a**n*</sub> − *T*<sub>*o**b**s*</sub>)
+(*p**C**O*<sub>2</sub> at *T*<sub>mean</sub>) = (*p**C**O*<sub>2</sub>)<sub>*o**b**s*</sub> × *e**x**p*(0.0423(*T*<sub>mean</sub> − *T*<sub>*o**b**s*</sub>)
 
 ### Calculations
 
@@ -280,8 +263,8 @@ changes in the concentration of CO<sub>2</sub>, which reflect a
 combination of biology and diffusion of CO<sub>2</sub> between ocean and
 atmosphere and advection past the sensor by tides and currents. Here we
 adjust pCO<sub>2</sub> to a “standard temperature” of 12 degrees C. This
-is slightly warmer than the observed annual average temperature We use 2
-degrees C only for consistency with analysis of the CBEP / UNH data.
+is slightly warmer than the observed annual average temperature. We use
+12 degrees C for consistency with analysis of the CBEP / UNH data.
 
 ``` r
 t_ref = 12
@@ -295,6 +278,8 @@ rm(t_ref)
 
 ``` r
 long_data <- the_data %>%
+  relocate(day, .after = hour) %>%
+  relocate(hour, .after = doy) %>%
   pivot_longer(cols= depth:omega_a, 
                names_to='Parameter', values_to = 'Value') %>%
   mutate(Parameter = factor(Parameter,
@@ -376,14 +361,16 @@ diurnal_data <- the_data %>%
 # Exploratory Graphics
 
 ``` r
-the_data %>% ggpairs(c(10:12, 13:14), progress=FALSE)
+the_data %>% 
+  ggpairs(c(10:12, 13:14), progress=FALSE)
 ```
 
-![](FOCB-OA-Data-Analysis_files/figure-gfm/pairs_plot_1-1.png)<!-- -->
+![](FOCB_OA_Data_Analysis_files/figure-gfm/pairs_plot_1-1.png)<!-- -->
+
 What jumps out most strongly is the negative association between
 temperature and DO. Most of the negative association between DO and
 temperature vanishes when looking at percent saturation. Temperature
-show strong bimodal distribution, presumably because of winter and
+shows a strong bimodal distribution, presumably because of winter and
 summer temperature regimes. DO shows weak bimodal structure, but percent
 saturation does not.
 
@@ -391,7 +378,8 @@ saturation does not.
 the_data %>% ggpairs(c(10:12, 15:18), progress=FALSE)
 ```
 
-![](FOCB-OA-Data-Analysis_files/figure-gfm/pairs_plot_2-1.png)<!-- -->
+![](FOCB_OA_Data_Analysis_files/figure-gfm/pairs_plot_2-1.png)<!-- -->
+
 Mutual temperature dependence of DO and pCO<sub>2</sub> means those two
 variables are negatively correlated. WEAK negative association remains
 even after temperature correction, so this is not just a thermodynamic
@@ -403,13 +391,13 @@ before temperature correction.
 
 There are a few wonky observations. They look like high pCO2, moderate
 low salinity in moderately cool temperatures. I bet they are all a big
-storm event…..
+storm event…
 
 ``` r
 the_data %>% ggpairs(c(10:12, 17:21), progress=FALSE)
 ```
 
-![](FOCB-OA-Data-Analysis_files/figure-gfm/pairs_plot_3-1.png)<!-- -->
+![](FOCB_OA_Data_Analysis_files/figure-gfm/pairs_plot_3-1.png)<!-- -->
 Calculates total alkalinity and dissolved inorganic carbon are nearly
 measuring the same thing – no surprise in sea water.
 
@@ -419,10 +407,10 @@ these correlations will involve developing GAMM models.
 
 # Summary Statistics
 
-# Entire Data Set
+## Entire Data Set
 
-This is legacy code. It would be easier today to develop this directly
-in the tidyverse.
+This is legacy code. It would be easier today to develop this in the
+tidyverse.
 
 ``` r
 the.mins     <- sapply(the_data[9:21], min, na.rm=TRUE)
@@ -467,10 +455,6 @@ knitr::kable(result, digits = c(1,1,2,1,3,0))
 | Total Alkalinity           |   779.2 | 1724.4 | 1761.59 |  4598.1 |        338.146 |        19466 |
 | Dissolved Inorganic Carbon |   756.2 | 1622.7 | 1657.09 |  4382.7 |        314.167 |        19466 |
 | Omega Aragonite            |     0.2 |    1.1 |    1.19 |     4.1 |          0.424 |        19465 |
-
-``` r
-write.csv(result, 'summarystats_OA_FOCB.csv')
-```
 
 ## Omega Aragonite Observations and Percentage Below Levels of Concern
 
@@ -590,10 +574,6 @@ knitr::kable(monthly_tbl)
 | temperature | sd     |    1.466 |    1.236 |    1.183 |    1.499 |    1.504 |    1.543 |    1.560 |    1.350 |    1.297 |    1.552 |    2.078 |    1.553 |
 | temperature | count  | 2231.000 | 1803.000 | 2214.000 | 2160.000 | 2166.000 | 2176.000 | 2504.000 | 2949.000 | 2879.000 | 2975.000 | 2894.000 | 2975.000 |
 
-``` r
-write_csv(monthly_tbl, 'Monthly_summaries_OA_FOCB.csv')
-```
-
 # Base Graphics
 
 ## Constants for Axis Labels
@@ -636,11 +616,9 @@ plt
     ## Warning in is.na(x): is.na() applied to non-(list or vector) of type
     ## 'expression'
 
-![](FOCB-OA-Data-Analysis_files/figure-gfm/pc02_Raw_by_doy-1.png)<!-- -->
+![](FOCB_OA_Data_Analysis_files/figure-gfm/pc02_Raw_by_doy-1.png)<!-- -->
 
 ``` r
-#ggsave('figures/pco2RawSeasonal_focb.png', type = 'cairo', 
-#width = 7, height = 5)
 ggsave('figures/pco2RawSeasonal_focb.pdf', device=cairo_pdf,
        width = 7, height = 5)
 ```
@@ -675,10 +653,9 @@ plt
 
     ## Warning: Removed 10799 rows containing missing values (geom_point).
 
-![](FOCB-OA-Data-Analysis_files/figure-gfm/pc02_by_doy-1.png)<!-- -->
+![](FOCB_OA_Data_Analysis_files/figure-gfm/pc02_by_doy-1.png)<!-- -->
 
 ``` r
-#ggsave('figures/pco2Seasonal_focb.png', type = 'cairo', width = 7, height = 5)
 ggsave('figures/pco2Seasonal_focb.pdf', device=cairo_pdf, width = 7, height = 5)
 ```
 
@@ -698,7 +675,7 @@ plt  <- long_data %>% filter(Parameter %in% c('pco2', 'pco2_corr')) %>%
   ggplot(aes(x=doy, y=Value, alpha=Parameter)) +
   geom_line(aes(color = Parameter)) +
  
-  scale_alpha_discrete(range = c(0.25, 1), name = '') +
+  scale_alpha_discrete(range = c(0.75, 0.5), name = '') +
   scale_x_continuous(breaks = cutpoints, labels = monthlabs) + 
   scale_color_manual(values=cbep_colors2(), name='') +
 
@@ -720,10 +697,9 @@ plt
 
     ## Warning: Removed 96 row(s) containing missing values (geom_path).
 
-![](FOCB-OA-Data-Analysis_files/figure-gfm/pco2_comparison-1.png)<!-- -->
+![](FOCB_OA_Data_Analysis_files/figure-gfm/pco2_comparison-1.png)<!-- -->
 
 ``` r
-#ggsave('figures/pco2compare_focb.png', type = 'cairo', width = 3, height = 2)
 ggsave('figures/pco2compare_focb.pdf', device=cairo_pdf, width = 3, height = 2)
 ```
 
@@ -750,10 +726,9 @@ plt
 
     ## Warning: Removed 909 rows containing missing values (geom_point).
 
-![](FOCB-OA-Data-Analysis_files/figure-gfm/ph_by_doy-1.png)<!-- -->
+![](FOCB_OA_Data_Analysis_files/figure-gfm/ph_by_doy-1.png)<!-- -->
 
 ``` r
-#ggsave('figures/phSeasonal_focb.png', type = 'cairo', width = 7, height = 5)
 ggsave('figures/phSeasonal_focb.pdf', device=cairo_pdf, width = 7, height = 5)
 ```
 
@@ -764,13 +739,8 @@ ggsave('figures/phSeasonal_focb.pdf', device=cairo_pdf, width = 7, height = 5)
 ``` r
 plt <- ggplot(the_data, aes(doy, omega_a)) + 
   geom_point(aes(color = factor(year)), alpha = 0.1) +
-  
-  # geom_hline(aes(yintercept = 1.5), lty = 'solid', color = 'gray') +
-  # geom_text(aes(x=0, y=1.4, label= 'Omega = 1.5', hjust = 0), size=3) +
-  
   geom_hline(aes(yintercept = 1), lty = 'solid', color = 'gray') +
   geom_text(aes(x=0, y=1.1, label= 'Omega = 1.0', hjust = 0), size=3) +
-  
   
   xlab('') +
   ylab(expression(Omega[a])) +
@@ -782,17 +752,14 @@ plt <- ggplot(the_data, aes(doy, omega_a)) +
   
   theme_cbep() +
   theme(axis.text.x=element_text(angle=90, vjust = 1.5))
-  
 plt
 ```
 
     ## Warning: Removed 10800 rows containing missing values (geom_point).
 
-![](FOCB-OA-Data-Analysis_files/figure-gfm/omega_by_doy-1.png)<!-- -->
+![](FOCB_OA_Data_Analysis_files/figure-gfm/omega_by_doy-1.png)<!-- -->
 
 ``` r
-#ggsave('figures/omegaSeasonal_focb.png', type = 'cairo', 
-#width = 7, height = 5)
 ggsave('figures/omegaSeasonal_focb.pdf', device=cairo_pdf, 
        width = 7, height = 5)
 ```
@@ -817,8 +784,7 @@ Notice that the selection of the dimension of the periodic basis of the
 smooths in the GAM (signaled in k=6) is essentially selected here by eye
 to create a visual balance between simplicity and complexity. The
 default here probably over-fits, as described above. We explore the
-implied GAM (and related GAMM) further in the another R Notebook in the
-“Analysis” folder.
+implied GAM (and related GAMM) further in the another R Notebook.
 
 ``` r
 labs <- c(expression(paste(pCO[2*(cor)], ' (', mu, 'Atm)')), 'pH')
@@ -842,13 +808,12 @@ plt <-
                    labeller = label_parsed ) +
   scale_color_discrete(name = "Month") + 
   scale_x_continuous(breaks = c(0,6,12,18,24)) #+
-  #ggtitle('Daily Fluctuations')
 plt
 ```
 
     ## Warning: Removed 12388 rows containing non-finite values (stat_smooth).
 
-![](FOCB-OA-Data-Analysis_files/figure-gfm/combined_plot-1.png)<!-- -->
+![](FOCB_OA_Data_Analysis_files/figure-gfm/combined_plot-1.png)<!-- -->
 
 ``` r
 ggsave('figures/dailyco2andphbymonth_focb.pdf', device = cairo_pdf, 
@@ -857,11 +822,6 @@ ggsave('figures/dailyco2andphbymonth_focb.pdf', device = cairo_pdf,
 
     ## Warning: Removed 12388 rows containing non-finite values (stat_smooth).
 
-``` r
-#ggsave('figures/dailyco2andphbymonth_focb.png', type = 'cairo', 
-#width = 8, height = 5)
-```
-
 ## Corrected pCO2 Graph
 
 ``` r
@@ -869,9 +829,6 @@ plt <- diurnal_data %>%
   ggplot(aes(hour,pco2_corr_res)) +
   geom_smooth(aes(color=Month), method = "gam",
               formula = y~s(x, bs='cc', k=6), se=FALSE, lwd=0.75) +
-  # annotate(geom = "text", label = expression(atop("Temperature", "Corrected"~pCO[2])),
-  #          x = 24, y = 30,
-  #          color = "black", hjust=1, size = 4) +
   theme_cbep(base_size = 12) +
   xlab('Hour of Day') +
   ylab(expression (atop(pCO[2*(cor)]~(mu*Atm), Difference~From~Daily~Average))) +
@@ -880,17 +837,14 @@ plt <- diurnal_data %>%
         legend.text      = element_text(size = 10)
         ) +
   scale_x_continuous(breaks = c(0,6,12,18,24)) #+
-  #ggtitle(expression(Daily~pCO[2]))
 plt
 ```
 
-![](FOCB-OA-Data-Analysis_files/figure-gfm/pco2_figure-1.png)<!-- -->
+![](FOCB_OA_Data_Analysis_files/figure-gfm/pco2_figure-1.png)<!-- -->
 
 ``` r
 ggsave('figures/dailyCO2bymonth_focb.pdf', device=cairo_pdf, 
        width = 4, height = 4)
-#ggsave('figures/dailyCO2bymonth_focb.png', type='cairo', 
-# width = 4, height = 4)
 ```
 
 ## pH Graph
@@ -910,14 +864,12 @@ plt <- diurnal_data %>%
   scale_linetype_discrete(name = "Month") + 
   theme(legend.key.width=unit(0.25,"in")) +
   scale_x_continuous(breaks = c(0,6,12,18,24)) #+
-  #ggtitle(expression(Daily~pH))
 plt
 ```
 
-![](FOCB-OA-Data-Analysis_files/figure-gfm/phfigure-1.png)<!-- -->
+![](FOCB_OA_Data_Analysis_files/figure-gfm/phfigure-1.png)<!-- -->
 
 ``` r
 ggsave('figures/dailyphbymonth_focb.pdf', device=cairo_pdf, 
        width = 4, height = 4)
-#ggsave('figures/dailyphbymonth_focb.png', type='cairo', width = 4, height = 4)
 ```

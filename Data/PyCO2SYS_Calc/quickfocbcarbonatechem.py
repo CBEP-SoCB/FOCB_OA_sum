@@ -106,7 +106,7 @@ CO2dict = pyco2.CO2SYS(focb_data['pco2'], focb_data['ph'], 4, 3,
 # array of dictionaries to feed to a DictWriter
 
 # first select columns we care about
-# Chris sent me code that selected them by location, but these appear correct
+# Chris Hunt sent me code that selected them by location, but these appear correct
 
 
 #%%

@@ -29,7 +29,7 @@ load_cbep_fonts()
 # Load Data
 ## Establish Folder Reference
 ```{r folder_refs}
-sibfldnm <- 'Original_Data'
+sibfldnm <- 'Data'
 parent   <- dirname(getwd())
 sibling  <- file.path(parent,sibfldnm)
 
@@ -49,7 +49,7 @@ A solution in an answer to this stack overflow questions
 suggests reading in the first row only to generate names, then skip the row of
 names and the row of units, and read the "REAL" data.
 
-Note that I round the timestamp on the data to the nearest hour.
+Note that we round the timestamp on the data to the nearest hour.
 
 ### Primary Data
 ```{r load_data, warning = FALSE}
@@ -77,20 +77,19 @@ the_data <- the_data %>%
                            sprintf("%02d", day), ' ', sprintf("%02d", hour)),
          Month = factor(month, labels = month.abb)) %>%
   arrange(datetime)              # Confirm that data are in chronological order
-
 ```
 
 ### CO2SYS Results
 We ran CO2SYS in Python, principally to calculate estimated pH under the total 
 pH scale.  Here we load it and use a left join by timestamp to add the data to 
 the principal data set. 
+
 ```{r load_CO2SYS}
-sibfldnm <- 'PyCO2SYS_Calc'
-parent   <- dirname(getwd())
-sibling  <- file.path(parent,sibfldnm)
+niecefldnm <- 'PyCO2SYS_Calc'
+niece  <- file.path(sibling, niecefldnm)
 
 fn    <- 'focbco2sys_out.csv'
-fpath <- file.path(sibling,fn)
+fpath <- file.path(niece,fn)
 
 
 ph_tot_data <- read_csv(fpath, 
@@ -110,11 +109,11 @@ ph_tot_data <- read_csv(fpath,
   mutate(tstamp = paste0(year, '/', sprintf("%02d", month), '/',
                          sprintf("%02d", day), ' ', sprintf("%02d", hour))) %>%
   select(ph_tot, tstamp)
-           
 ```
 
 ### Merge pH (Total Scale) data into primary data
 Note this assumes there are no duplicate timestamps....
+
 ```{r merge_in pH data}
 
 the_data <- the_data %>%
@@ -144,10 +143,10 @@ changes in [CO~2~].
 The Takahashi et al. 2002 equations are as follows:
 
 #### "Expected pCO~2~" at Observed Temperature
-$$(pCO_{2} \textrm{ at }T_{obs}) = (pCO_{2})_{obs} \times exp(0.0423(T_{obs}- T_{mean})$$
+$$(pCO_{2} \textrm{ at }T_{obs}) = (pCO_{2})_{obs} \times exp(0.0423(T_{obs}- T_{\text{mean}})$$
 
 #### "Temperature Corrected" pCO~2~
-$$(pCO_{2} \textrm{ at }T_{mean}) = (pCO_{2})_{obs} \times exp(0.0423(T_{mean}- T_{obs})$$
+$$(pCO_{2} \textrm{ at }T_{\text{mean}}) = (pCO_{2})_{obs} \times exp(0.0423(T_{\text{mean}}- T_{obs})$$
 
 ### Calculations
 Here we calculate the "temperature corrected" time series as calculated in
@@ -157,7 +156,7 @@ temperature changes.  These reflect changes in the concentration of CO~2~, which
 reflect a combination of biology and diffusion of CO~2~ between ocean and
 atmosphere and advection past the sensor by tides and currents. Here we adjust
 pCO~2~ to a "standard temperature" of 12 degrees C.  This is slightly warmer
-than  the observed annual average temperature We use 2 degrees C only for
+than  the observed annual average temperature. We use 12 degrees C for
 consistency with analysis of the CBEP / UNH data.
 
 ```{r calc_pco2_corr}
@@ -171,6 +170,8 @@ rm(t_ref)
 ## Create Long Form Data
 ```{r long_data}
 long_data <- the_data %>%
+  relocate(day, .after = hour) %>%
+  relocate(hour, .after = doy) %>%
   pivot_longer(cols= depth:omega_a, 
                names_to='Parameter', values_to = 'Value') %>%
   mutate(Parameter = factor(Parameter,
@@ -215,6 +216,7 @@ daily_data <- the_data %>%
 ## Calculate Diurnal Deviations
 We calculate hourly deviation from daily averages for the principal OA measures. 
 This allows us to look at diurnal patterns.
+
 ```{r hourly_deviations}
 diurnal_data <- the_data %>%
   group_by(thedate) %>%
@@ -247,18 +249,21 @@ diurnal_data <- the_data %>%
 ```
 
 # Exploratory Graphics
-```{r pairs_plot_1, warning=FALSE, cache = TRUE}
-the_data %>% ggpairs(c(10:12, 13:14), progress=FALSE)
+```{r pairs_plot_1, warning=FALSE}
+the_data %>% 
+  ggpairs(c(10:12, 13:14), progress=FALSE)
 ```
+
 What jumps out most strongly is the negative association between temperature and
 DO. Most of the negative association between DO and temperature vanishes when
-looking at percent saturation. Temperature show strong bimodal distribution,
+looking at percent saturation. Temperature shows a strong bimodal distribution,
 presumably because of winter and summer temperature regimes. DO shows weak
 bimodal structure, but percent saturation does not.
 
-```{r pairs_plot_2, warning=FALSE, cache = TRUE}
+```{r pairs_plot_2, warning=FALSE}
 the_data %>% ggpairs(c(10:12, 15:18), progress=FALSE)
 ```
+
 Mutual temperature dependence of DO and pCO~2~ means those two variables are
 negatively correlated.  WEAK negative association remains even after temperature
 correction, so this is not just a thermodynamic relationship.  (Don't trust
@@ -269,9 +274,9 @@ temperature correction.
 
 There are a few wonky observations.  They look like high pCO2, moderate low 
 salinity in moderately cool temperatures.  I bet they are all a big storm 
-event.....
+event...
 
-```{r pairs_plot_3, warning=FALSE, cache = TRUE}
+```{r pairs_plot_3, warning=FALSE}
 the_data %>% ggpairs(c(10:12, 17:21), progress=FALSE)
 ```
 Calculates total alkalinity and dissolved inorganic carbon are nearly measuring
@@ -282,9 +287,8 @@ models do not account for very high autocorrelations.  Checking these
 correlations will involve developing GAMM models.
 
 # Summary Statistics
-# Entire Data Set
-This is legacy code. It would be easier today to develop this directly in the 
-tidyverse.
+## Entire Data Set
+This is legacy code. It would be easier today to develop this in the tidyverse.
 ```{r summary_stats}
 the.mins     <- sapply(the_data[9:21], min, na.rm=TRUE)
 the.medians  <- sapply(the_data[9:21], median, na.rm=TRUE)
@@ -311,7 +315,6 @@ rownames(result) <- c('Depth',
                       'Omega Aragonite'
                       )
 knitr::kable(result, digits = c(1,1,2,1,3,0))
-write.csv(result, 'summarystats_OA_FOCB.csv')
 ```
 
 ```{r cleanup, echo=FALSE}
@@ -376,7 +379,6 @@ monthly_tbl <- the_data %>%
                names_to = 'label') %>%
   pivot_wider(id_cols = c(parameter, label), names_from=Month) 
 knitr::kable(monthly_tbl)
-write_csv(monthly_tbl, 'Monthly_summaries_OA_FOCB.csv')
 ```
 
 # Base Graphics
@@ -410,8 +412,6 @@ plt <- ggplot(the_data, aes(doy, pco2)) +
   theme_cbep() +
   theme(axis.text.x=element_text(angle=90, vjust = 1.5))
 plt
-#ggsave('figures/pco2RawSeasonal_focb.png', type = 'cairo', 
-#width = 7, height = 5)
 ggsave('figures/pco2RawSeasonal_focb.pdf', device=cairo_pdf,
        width = 7, height = 5)
 ```
@@ -420,6 +420,7 @@ ggsave('figures/pco2RawSeasonal_focb.pdf', device=cairo_pdf,
 It's not technically OK to show a reference line on a figure with 
 temperature-corrected pCO2.  The equilibrium between [co~2~] and fugacity 
 is temperature dependent.
+
 ```{r pc02_by_doy,fig.width = 7, fig.height = 5}
 plt <- ggplot(the_data, aes(doy, pco2_corr)) + 
   geom_point(aes(color = factor(year)), alpha = 0.1) +
@@ -436,7 +437,6 @@ plt <- ggplot(the_data, aes(doy, pco2_corr)) +
   theme_cbep() +
   theme(axis.text.x=element_text(angle=90, vjust = 1.5))
 plt
-#ggsave('figures/pco2Seasonal_focb.png', type = 'cairo', width = 7, height = 5)
 ggsave('figures/pco2Seasonal_focb.pdf', device=cairo_pdf, width = 7, height = 5)
 ```
 
@@ -453,7 +453,7 @@ plt  <- long_data %>% filter(Parameter %in% c('pco2', 'pco2_corr')) %>%
   ggplot(aes(x=doy, y=Value, alpha=Parameter)) +
   geom_line(aes(color = Parameter)) +
  
-  scale_alpha_discrete(range = c(0.25, 1), name = '') +
+  scale_alpha_discrete(range = c(0.75, 0.5), name = '') +
   scale_x_continuous(breaks = cutpoints, labels = monthlabs) + 
   scale_color_manual(values=cbep_colors2(), name='') +
 
@@ -466,10 +466,7 @@ plt  <- long_data %>% filter(Parameter %in% c('pco2', 'pco2_corr')) %>%
   theme(axis.text.x=element_text(angle=90, vjust = 1.5)) +
   theme(legend.position= c(.3, .8))
 plt
-
-#ggsave('figures/pco2compare_focb.png', type = 'cairo', width = 3, height = 2)
 ggsave('figures/pco2compare_focb.pdf', device=cairo_pdf, width = 3, height = 2)
-
 ```
 
 ### pH (Total Scale)
@@ -488,7 +485,6 @@ plt <- ggplot(the_data, aes(doy, ph_tot)) +
   theme_cbep() +
   theme(axis.text.x=element_text(angle=90, vjust = 1.5))
 plt
-#ggsave('figures/phSeasonal_focb.png', type = 'cairo', width = 7, height = 5)
 ggsave('figures/phSeasonal_focb.pdf', device=cairo_pdf, width = 7, height = 5)
 ```
 
@@ -496,13 +492,8 @@ ggsave('figures/phSeasonal_focb.pdf', device=cairo_pdf, width = 7, height = 5)
 ```{r omega_by_doy, fig.width = 7, fig.height = 5}
 plt <- ggplot(the_data, aes(doy, omega_a)) + 
   geom_point(aes(color = factor(year)), alpha = 0.1) +
-  
-  # geom_hline(aes(yintercept = 1.5), lty = 'solid', color = 'gray') +
-  # geom_text(aes(x=0, y=1.4, label= 'Omega = 1.5', hjust = 0), size=3) +
-  
   geom_hline(aes(yintercept = 1), lty = 'solid', color = 'gray') +
   geom_text(aes(x=0, y=1.1, label= 'Omega = 1.0', hjust = 0), size=3) +
-  
   
   xlab('') +
   ylab(expression(Omega[a])) +
@@ -514,13 +505,9 @@ plt <- ggplot(the_data, aes(doy, omega_a)) +
   
   theme_cbep() +
   theme(axis.text.x=element_text(angle=90, vjust = 1.5))
-  
 plt
-#ggsave('figures/omegaSeasonal_focb.png', type = 'cairo', 
-#width = 7, height = 5)
 ggsave('figures/omegaSeasonal_focb.pdf', device=cairo_pdf, 
        width = 7, height = 5)
-
 ```
 
 # Daily Patterns
@@ -539,7 +526,7 @@ Notice that the selection of the dimension of the periodic basis of the smooths
 in the GAM (signaled in k=6) is essentially selected here by eye to create a
 visual balance between simplicity and complexity.  The default here probably
 over-fits, as described above.  We explore the implied GAM (and related GAMM)
-further in the another R Notebook in the "Analysis" folder.
+further in the another R Notebook.
 
 ```{r combined_plot, fig.width = 8, fig.height = 5}
 labs <- c(expression(paste(pCO[2*(cor)], ' (', mu, 'Atm)')), 'pH')
@@ -563,12 +550,9 @@ plt <-
                    labeller = label_parsed ) +
   scale_color_discrete(name = "Month") + 
   scale_x_continuous(breaks = c(0,6,12,18,24)) #+
-  #ggtitle('Daily Fluctuations')
 plt
 ggsave('figures/dailyco2andphbymonth_focb.pdf', device = cairo_pdf, 
        width = 8, height = 5)
-#ggsave('figures/dailyco2andphbymonth_focb.png', type = 'cairo', 
-#width = 8, height = 5)
 ```
 
 ## Corrected pCO2 Graph
@@ -577,9 +561,6 @@ plt <- diurnal_data %>%
   ggplot(aes(hour,pco2_corr_res)) +
   geom_smooth(aes(color=Month), method = "gam",
               formula = y~s(x, bs='cc', k=6), se=FALSE, lwd=0.75) +
-  # annotate(geom = "text", label = expression(atop("Temperature", "Corrected"~pCO[2])),
-  #          x = 24, y = 30,
-  #          color = "black", hjust=1, size = 4) +
   theme_cbep(base_size = 12) +
   xlab('Hour of Day') +
   ylab(expression (atop(pCO[2*(cor)]~(mu*Atm), Difference~From~Daily~Average))) +
@@ -588,12 +569,9 @@ plt <- diurnal_data %>%
         legend.text      = element_text(size = 10)
         ) +
   scale_x_continuous(breaks = c(0,6,12,18,24)) #+
-  #ggtitle(expression(Daily~pCO[2]))
 plt
 ggsave('figures/dailyCO2bymonth_focb.pdf', device=cairo_pdf, 
        width = 4, height = 4)
-#ggsave('figures/dailyCO2bymonth_focb.png', type='cairo', 
-# width = 4, height = 4)
 ```
 
 ## pH Graph
@@ -612,9 +590,7 @@ plt <- diurnal_data %>%
   scale_linetype_discrete(name = "Month") + 
   theme(legend.key.width=unit(0.25,"in")) +
   scale_x_continuous(breaks = c(0,6,12,18,24)) #+
-  #ggtitle(expression(Daily~pH))
 plt
 ggsave('figures/dailyphbymonth_focb.pdf', device=cairo_pdf, 
        width = 4, height = 4)
-#ggsave('figures/dailyphbymonth_focb.png', type='cairo', width = 4, height = 4)
 ```
