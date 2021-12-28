@@ -25,10 +25,10 @@ review, critique, learn from, and build upon CBEP science.
  
  The archive contains the following sub-folders:
 
-- Data.  Original data, with a "DATA_SOURCES.md"  and DATA_NOTES.md" files
+- Data.  Working data, with a "DATA_SOURCES.md"  and DATA_NOTES.md" files
   that document data sources and contents.
   
-  - PyCO2SYS_Calc. This folder contains a python script to convert pH
+  - PyCO2SYS_Calc. This subfolder contains a python script to convert pH
     observations from the NBS scale to the Total Scale, for comparison with data
     collected by UNH scientists. Results as produced via the Python CO2SYS
     calculations are provided as a CSV file.

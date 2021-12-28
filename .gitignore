@@ -37,4 +37,4 @@ DATA_SOURCES.html
 *.nb.html
 
 # Models
-*/rds
+*.rds
