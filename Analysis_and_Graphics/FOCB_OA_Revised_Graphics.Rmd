@@ -176,14 +176,32 @@ Takahashi et al. 2002 Used direct calculation of "temperature corrected" pCO~2~ 
 The Takahashi et al. 2002 equations are as follows:
 
 #### "Expected pCO~2~" at Observed Temperature
-$$(pCO_{2} \textrm{ at }T_{\textrm{obs}}) = (pCO_{2})_{\textrm{obs}} 
+$$(pCO_{2} \textrm{ at }T_{\textrm{obs}}) = (pCO_{2})_{\textrm{mean}} 
 \times exp(0.0423(T_{\textrm{obs}}- T_{\textrm{mean}})$$
 
+This relationship calculates the "expected" pCO~2~ at the observed temperature,
+if there were no changes in [CO~2~]. Because this relationship depends on the match
+between average pCO~2~ and average temperature, the equation references both
+annual mean temperature and annual mean pCO~2~.
+
 #### "Temperature Corrected" pCO~2~
-$$(pCO_{2} \textrm{ at }T_{\textrm{mean}}) = (pCO_{2})_{\textrm{obs}} \times exp(0.0423(T_{\textrm{mean}}- T_{\textrm{obs}})$$
+Takaheshi et al. referenced the "Temperature Corrected" value to mean annual 
+temperature.  We used a selected reference temperature near the observed mean,
+as simpler to present to a non-technical audience.
+
+$$(pCO_{2} \textrm{ at }T_{\textrm{ref}}) = (pCO_{2})_{\textrm{obs}} 
+\times exp(0.0423(T_{\textrm{ref}}- T_{\textrm{obs}})$$
 
 ### Calculations
-We calculate the "temperature corrected" time series as calculated in Takahashi et al. "Temperature Corrected" pCO~2~ value ("co2_corr") provides a trace of changes in pCO~2~ that "would have happened" in the absence of temperature changes.  These reflect changes in the concentration of CO~2~, which reflect a combination of biology and diffusion of CO~2~ between ocean and atmosphere and advection past the sensor by tides and currents. Here we adjust pCO~2~ to a "standard temperature" of 12 degrees C.  This is slightly warmer than  the observed annual average temperature. We use 12 degrees C principally for consistency with analysis of the CBEP / UNH data. 
+We calculate the "temperature corrected" time series as calculated in Takahashi
+et al. "Temperature Corrected" pCO~2~ value ("co2_corr") provides a trace of
+changes in pCO~2~ that "would have happened" in the absence of temperature
+changes.  These reflect changes in the concentration of CO~2~, which reflect a
+combination of biology and diffusion of CO~2~ between ocean and atmosphere and
+advection past the sensor by tides and currents. Here we adjust pCO~2~ to a
+"standard temperature" of 12 degrees C.  This is slightly warmer than  the
+observed annual average temperature. We use 12 degrees C principally for
+consistency with analysis of the CBEP / UNH data.
 
 ```{r calc_pco2_corr}
 t_ref = 12
@@ -246,42 +264,45 @@ It's not technically OK to show a reference line on a figure with
 temperature-corrected pCO2.  The equilibrium between [co~2~] and fugacity is 
 temperature dependent.
 
-```{r pc02_by_doy,fig.width = 7, fig.height = 5}
-plt <- ggplot(the_data, aes(doy, pco2_corr)) +
+```{r pc02_by_doy,fig.width = 5, fig.height = 4}
+plt <- ggplot(the_data, aes(doy, pco2_corr)) + 
   geom_point(aes(color = factor(year)), alpha = 0.1) +
   xlab('') +
   ylab(expression (Corrected~pCO[2]~(mu*Atm))) +
   scale_color_manual(values=year_colors, name='Year') +
   scale_x_continuous(breaks = cutpoints, labels = month.abb) +
+  scale_y_continuous(breaks = c(300,600, 900, 1200), limits = c(0, 1200)) +
   guides(colour = guide_legend(override.aes = list(alpha = 1))) +
   theme_cbep() +
   theme(axis.text.x=element_text(angle=90, vjust = 1.5))
 plt
-ggsave('figures/pco2Seasonal_focb.pdf', device=cairo_pdf, width = 7, height = 5)
+ggsave('figures/pco2Seasonal_focb.png', 
+       type = 'cairo', width = 5, height = 4)
 ```
 
 This shows much less obvious seasonality than the CBEP / UNH site.
 
 ### pH (Total Scale)
-```{r ph_by_doy,fig.width = 7, fig.height = 5}
-plt <- ggplot(the_data, aes(doy, ph_tot)) + 
+```{r ph_by_doy,fig.width = 5, fig.height = 4}
+plt <- ggplot(the_data, aes(doy, ph_tot)) +
   geom_point(aes(color = factor(year)),alpha = 0.1) +
   xlab('') +
   ylab('pH') +
   scale_color_manual(values=year_colors, name='Year') +
   scale_x_continuous(breaks = cutpoints, labels = month.abb) +
 
-  scale_y_continuous(limits = c(7.5, 8.5), breaks = c(7.5, 7.75, 8.0, 8.25, 8.5)) +
-  
+  scale_y_continuous(limits = c(7.5, 8.5), 
+                     breaks = c(7.5, 7.75, 8.0, 8.25, 8.5)) +
   guides(colour = guide_legend(override.aes = list(alpha = 1))) +
   theme_cbep() +
   theme(axis.text.x=element_text(angle=90, vjust = 1.5))
 plt
-ggsave('figures/phSeasonal_focb.pdf', device=cairo_pdf, width = 7, height = 5)
+ggsave('figures/phSeasonal_focb.png',
+       type = 'cairo', width = 5, height = 4)
 ```
 
 ### Aragonite Saturation State
-```{r omega_by_doy, fig.width = 7, fig.height = 5}
+```{r omega_by_doy, fig.width = 5, fig.height = 4}
 plt <- ggplot(the_data, aes(doy, omega_a)) + 
   geom_point(aes(color = factor(year)), alpha = 0.1) +
   geom_hline(aes(yintercept = 1), lty = 'solid', color = 'gray') +
@@ -292,14 +313,15 @@ plt <- ggplot(the_data, aes(doy, omega_a)) +
   
   scale_color_manual(values=year_colors, name='Year') +
   scale_x_continuous(breaks = cutpoints, labels = month.abb) +
-  
+  scale_y_continuous( limits = c(0, 4)) +
   guides(colour = guide_legend(override.aes = list(alpha = 1))) +
   
   theme_cbep() +
   theme(axis.text.x=element_text(angle=90, vjust = 1.5))
   
 plt
-ggsave('figures/omegaSeasonal_focb.pdf', device=cairo_pdf, width = 7, height = 5)
+ggsave('figures/omegaSeasonal_focb.png',
+       type = 'cairo', width = 5, height = 4)
 ```
 
 # Daily Patterns

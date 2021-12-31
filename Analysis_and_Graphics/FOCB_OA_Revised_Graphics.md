@@ -278,11 +278,21 @@ The Takahashi et al. 2002 equations are as follows:
 
 #### “Expected pCO<sub>2</sub>” at Observed Temperature
 
-(*p**C**O*<sub>2</sub> at *T*<sub>obs</sub>) = (*p**C**O*<sub>2</sub>)<sub>obs</sub> × *e**x**p*(0.0423(*T*<sub>obs</sub> − *T*<sub>mean</sub>)
+(*p**C**O*<sub>2</sub> at *T*<sub>obs</sub>) = (*p**C**O*<sub>2</sub>)<sub>mean</sub> × *e**x**p*(0.0423(*T*<sub>obs</sub> − *T*<sub>mean</sub>)
+
+This relationship calculates the “expected” pCO<sub>2</sub> at the
+observed temperature, if there were no changes in \[CO<sub>2</sub>\].
+Because this relationship depends on the match between average
+pCO<sub>2</sub> and average temperature, the equation references both
+annual mean temperature and annual mean pCO<sub>2</sub>.
 
 #### “Temperature Corrected” pCO<sub>2</sub>
 
-(*p**C**O*<sub>2</sub> at *T*<sub>mean</sub>) = (*p**C**O*<sub>2</sub>)<sub>obs</sub> × *e**x**p*(0.0423(*T*<sub>mean</sub> − *T*<sub>obs</sub>)
+Takaheshi et al. referenced the “Temperature Corrected” value to mean
+annual temperature. We used a selected reference temperature near the
+observed mean, as simpler to present to a non-technical audience.
+
+(*p**C**O*<sub>2</sub> at *T*<sub>ref</sub>) = (*p**C**O*<sub>2</sub>)<sub>obs</sub> × *e**x**p*(0.0423(*T*<sub>ref</sub> − *T*<sub>obs</sub>)
 
 ### Calculations
 
@@ -365,12 +375,13 @@ temperature-corrected pCO2. The equilibrium between \[co<sub>2</sub>\]
 and fugacity is temperature dependent.
 
 ``` r
-plt <- ggplot(the_data, aes(doy, pco2_corr)) +
+plt <- ggplot(the_data, aes(doy, pco2_corr)) + 
   geom_point(aes(color = factor(year)), alpha = 0.1) +
   xlab('') +
   ylab(expression (Corrected~pCO[2]~(mu*Atm))) +
   scale_color_manual(values=year_colors, name='Year') +
   scale_x_continuous(breaks = cutpoints, labels = month.abb) +
+  scale_y_continuous(breaks = c(300,600, 900, 1200), limits = c(0, 1200)) +
   guides(colour = guide_legend(override.aes = list(alpha = 1))) +
   theme_cbep() +
   theme(axis.text.x=element_text(angle=90, vjust = 1.5))
@@ -382,7 +393,8 @@ plt
 ![](FOCB_OA_Revised_Graphics_files/figure-gfm/pc02_by_doy-1.png)<!-- -->
 
 ``` r
-ggsave('figures/pco2Seasonal_focb.pdf', device=cairo_pdf, width = 7, height = 5)
+ggsave('figures/pco2Seasonal_focb.png', 
+       type = 'cairo', width = 5, height = 4)
 ```
 
     ## Warning: Removed 10799 rows containing missing values (geom_point).
@@ -392,15 +404,15 @@ This shows much less obvious seasonality than the CBEP / UNH site.
 ### pH (Total Scale)
 
 ``` r
-plt <- ggplot(the_data, aes(doy, ph_tot)) + 
+plt <- ggplot(the_data, aes(doy, ph_tot)) +
   geom_point(aes(color = factor(year)),alpha = 0.1) +
   xlab('') +
   ylab('pH') +
   scale_color_manual(values=year_colors, name='Year') +
   scale_x_continuous(breaks = cutpoints, labels = month.abb) +
 
-  scale_y_continuous(limits = c(7.5, 8.5), breaks = c(7.5, 7.75, 8.0, 8.25, 8.5)) +
-  
+  scale_y_continuous(limits = c(7.5, 8.5), 
+                     breaks = c(7.5, 7.75, 8.0, 8.25, 8.5)) +
   guides(colour = guide_legend(override.aes = list(alpha = 1))) +
   theme_cbep() +
   theme(axis.text.x=element_text(angle=90, vjust = 1.5))
@@ -412,7 +424,8 @@ plt
 ![](FOCB_OA_Revised_Graphics_files/figure-gfm/ph_by_doy-1.png)<!-- -->
 
 ``` r
-ggsave('figures/phSeasonal_focb.pdf', device=cairo_pdf, width = 7, height = 5)
+ggsave('figures/phSeasonal_focb.png',
+       type = 'cairo', width = 5, height = 4)
 ```
 
     ## Warning: Removed 909 rows containing missing values (geom_point).
@@ -430,7 +443,7 @@ plt <- ggplot(the_data, aes(doy, omega_a)) +
   
   scale_color_manual(values=year_colors, name='Year') +
   scale_x_continuous(breaks = cutpoints, labels = month.abb) +
-  
+  scale_y_continuous( limits = c(0, 4)) +
   guides(colour = guide_legend(override.aes = list(alpha = 1))) +
   
   theme_cbep() +
@@ -439,15 +452,16 @@ plt <- ggplot(the_data, aes(doy, omega_a)) +
 plt
 ```
 
-    ## Warning: Removed 10800 rows containing missing values (geom_point).
+    ## Warning: Removed 10801 rows containing missing values (geom_point).
 
 ![](FOCB_OA_Revised_Graphics_files/figure-gfm/omega_by_doy-1.png)<!-- -->
 
 ``` r
-ggsave('figures/omegaSeasonal_focb.pdf', device=cairo_pdf, width = 7, height = 5)
+ggsave('figures/omegaSeasonal_focb.png',
+       type = 'cairo', width = 5, height = 4)
 ```
 
-    ## Warning: Removed 10800 rows containing missing values (geom_point).
+    ## Warning: Removed 10801 rows containing missing values (geom_point).
 
 # Daily Patterns
 

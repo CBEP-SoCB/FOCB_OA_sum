@@ -143,11 +143,20 @@ changes in [CO~2~].
 The Takahashi et al. 2002 equations are as follows:
 
 #### "Expected pCO~2~" at Observed Temperature
-$$(pCO_{2} \textrm{ at }T_{\textrm{obs}}) = (pCO_{2})_{\textrm{obs}} 
+$$(pCO_{2} \textrm{ at }T_{\textrm{obs}}) = (pCO_{2})_{\textrm{mean}} 
 \times exp(0.0423(T_{\textrm{obs}}- T_{\textrm{mean}})$$
+This relationship calculates the "expected" pCO~2~ at the observed temperature,
+if there were no changes in [CO~2~]. Because this relationship depends on the match
+between average pCO~2~ and average temperature, the equation references both
+annual mean temperature and annual mean pCO~2~.
 
 #### "Temperature Corrected" pCO~2~
-$$(pCO_{2} \textrm{ at }T_{\textrm{mean}}) = (pCO_{2})_{\textrm{obs}} \times exp(0.0423(T_{\textrm{mean}}- T_{\textrm{obs}})$$
+Takaheshi et al. referenced the "Temperature Corrected" value to mean annual 
+temperature.  We used a selected reference temperature near the observed mean,
+as simpler to present to a non-technical audience.
+
+$$(pCO_{2} \textrm{ at }T_{\textrm{ref}}) = (pCO_{2})_{\textrm{obs}} 
+\times exp(0.0423(T_{\textrm{ref}}- T_{\textrm{obs}})$$
 
 ### Calculations
 Here we calculate the "temperature corrected" time series as calculated in
