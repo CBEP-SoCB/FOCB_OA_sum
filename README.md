@@ -5,7 +5,7 @@
     
 Friends of Casco Bay has been monitoring water quality in Casco Bay for nearly
 thirty years. in 2016, they began collecting continuous data from a monitoring
-location on Cousins ISland, including data on important acidification
+location on Cousins Island, including data on important acidification
 parameters.  Here we focus on coastal acidification, but FOCB data is also
 highlighted in related
 [water quality repositories](https://github.com/CBEP-SoCB/FOCB_WQ_sum.git).
