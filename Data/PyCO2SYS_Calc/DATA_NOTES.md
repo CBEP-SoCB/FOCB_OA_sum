@@ -19,7 +19,7 @@ FOCB data and then use the derived carbonate equilibrium to estimate the
 (unmeasured) pH on the Total Scale.
 
 This is an emerging area of scientific practice, and if we were to redo these
-analyses today, we might make different choices.  the pH - pCO2~2~ pair on which
+analyses today, we might make different choices.  the pH - pCO~2~ pair on which
 the FOCB carbonate equilibria were calculated does not perform all that well.
 Estimating pH this way may have introduced more error into our calculations than
 would have been added using a (technically incorrect, but simple) linear
