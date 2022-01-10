@@ -2,7 +2,7 @@
 
 ## "Continuos" Monitoring Data
 "CMS1 Data through 2019.xlsx" contains data logger data collected by FOCB.
-"CMS1" refers to "Continuous MOnitoring Station 1, located at the Chebeague 
+"CMS1" refers to "Continuous Monitoring Station 1, located at the Chebeague 
 Island Ferry dock, on the ocean side of Cousins Island.  The data were collected 
 with a YSI Sonde and a separate C-Sense pCO~2~ sensor.  The same data is also
 used in the
