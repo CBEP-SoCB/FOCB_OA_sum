@@ -19,7 +19,7 @@ FOCB data and then use the derived carbonate equilibrium to estimate the
 (unmeasured) pH on the Total Scale.
 
 This is an emerging area of scientific practice, and if we were to redo these
-analyses today, we might make different choices.  the pH - pCO2~2~ pair on which
+analyses today, we might make different choices.  The pH - pCO~2~ pair on which
 the FOCB carbonate equilibria were calculated does not perform all that well.
 Estimating pH this way may have introduced more error into our calculations than
 would have been added using a (technically incorrect, but simple) linear
@@ -30,7 +30,7 @@ estimation of carbonate equilibria.
 ## Why Python?
 The standard tool for calculating carbonate equilibria is `CO2SYS`, developed
 principally in MATLAB.  MATLAB is in widespread use in the oceanography 
-community, but it is less commonly used by inshore ecologists.  `CO2SYS` has
+community, but it is less commonly used by inshore ecologists. `CO2SYS` has
 been successfully ported to a number of other environments, including Excel, R,
 and Python.  Each version exists in a quasi-independent state, with its own
 irregular update process.  Most updated appear first in MATLAB, and gradually
@@ -53,17 +53,18 @@ parameters derived from that data including Omega aragonite, Omega calcite,
 total alkalinity, dissolved inorganic carbon, and our estimate of pH on the 
 Total scale.
 
-month        | Month of observation       | Integer 1 to 12, 1 = January
-year         | Year of observation        | four digit integer
-day          | Day of observation         | day of month integer 1-31
-hour         | Hour of observation        | integer, 24 hour clock  
-temp         | Water temperature          | Celsius
+Column Name  | Contents                         | Units                         
+-------------|----------------------------------|----------------------
+month        | Month of observation             | Integer 1 to 12, 1 = January
+year         | Year of observation              | four digit integer
+day          | Day of observation               | day of month integer 1-31
+hour         | Hour of observation              | integer, 24 hour clock  
+temp         | Water temperature                | Celsius
 sal          | Salinity, based on conductivity  | PSU (roughly, PPT)
-pco2         | Partial pressure of CO2    | uAtm
-ph           | pH from sonde pH sensor    | NBS pH scale
-omega_a      | Omega aragonite            | Dimensionless
-omega_c      | Omega calcite              | Dimensionless
-ta           | Total Alkalinity (calculated) |  uM/kg	
-dic          | Dissolved inorganic carbon (calculated)| uM/kg
-ph_tot       | pH (calculated)            | Total pH scale
-
+pco2         | Partial pressure of CO2          | uAtm
+ph           | pH from sonde pH sensor          | NBS pH scale
+omega_a      | Omega aragonite                  | Dimensionless
+omega_c      | Omega calcite                    | Dimensionless
+ta           | Total Alkalinity (calculated)    |  uM/kg	
+dic          | Dissolved inorganic carbon (calculated) | uM/kg
+ph_tot       | pH (calculated)                  | Total pH scale
